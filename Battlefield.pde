@@ -1,8 +1,7 @@
 // The overarching class that contains the entire model. Also holds configuration variables.
 
 class Battlefield {
-    // Battlefield information
-    String name = "Near the Liver";
+    // Status information
     int timeElapsed = 0;
     int percentageHealth = 100;
 
@@ -22,10 +21,6 @@ class Battlefield {
       this.pathogens = new ArrayList();
       this.macrophages = new ArrayList();
       this.neutrophils = new ArrayList();
-      
-      // Add two on-the-scene macrophages
-      macrophages.add(new Macrophage(new PVector(0, -100), 200, MACROPHAGE_SPEED));
-      macrophages.add(new Macrophage(new PVector(0, height + 200), 100, MACROPHAGE_SPEED));
     }
 
     void initBodyCells() {
@@ -76,7 +71,7 @@ class Battlefield {
     }
     
     // Checks whether the immune system has won or lost the battle. Also calculates percentage health.
-    void checkStatus() {
+    void updateStatus() {
        // Check if the invasion has ended and if there are no more pathogens: the immune system has won!
       if (frameCount > INVASION_END_FRAME) {
         boolean isPathogensLeft = false;
@@ -104,31 +99,38 @@ class Battlefield {
       }
     }
     
+    // Draws the status text at the bottom left corner of screen
     void drawStatus() {
+        // Black with slight transparency
+        fill(0, 0, 0, 200);
+        noStroke();
+        rectMode(CORNERS);
+        rect(15, height - 80, 160, height - 10, 25);
+        rectMode(CENTER);
+        
         fill(255);
         textSize(20);
         
-        textAlign(RIGHT);
-        text( String.format("Frame %d / %d", this.timeElapsed, int(INVASION_END_FRAME / 30)), width - 25, height - 50);
+        text( String.format("Time: %d / %d", this.timeElapsed, int(INVASION_END_FRAME / 50)), 35, height - 50);
         
         if (this.simulationStatus == "won") {
-          text("The immune system has won!", width - 25, height - 25);
+          text("The immune system has won!", 35, height - 25);
         }
         else if (this.simulationStatus == "lost") {
-          text("The immune system has lost...", width - 25, height - 25);
+          text("The immune system has lost...", 35, height - 25);
         }
         else {
-          text(Integer.toString(this.percentageHealth) + "%", width - 26, height - 25);
+          text("Health: " + Integer.toString(this.percentageHealth) + "%", 35, height - 25);
         };
     }
     
     void draw() {
       background(#1E0B34); // Dark purple background
       
-      checkStatus();
+      updateStatus();
       
       // Set the time elapsed to the frameCount, but less
-      this.timeElapsed = int(frameCount / 30);
+      this.timeElapsed = int(frameCount / 50);
 
       // Spawn pathogen if the invasion has not ended
       if (frameCount < INVASION_END_FRAME) {
@@ -153,8 +155,7 @@ class Battlefield {
       
       
       // Spawn macrophages
-      // Remainder 1 is so that the macrophage does not spawn immediately
-      if (frameCount % MACROPHAGE_CONSTANT_SPAWN_RATE == 1 || random(1) < MACROPHAGE_RANDOM_SPAWN_RATE) {
+      if (frameCount % MACROPHAGE_CONSTANT_SPAWN_RATE == 0 || random(1) < MACROPHAGE_RANDOM_SPAWN_RATE) {
         macrophages.add(new Macrophage(new PVector(-100, random(50, 500)), 100, MACROPHAGE_SPEED));
       }
       

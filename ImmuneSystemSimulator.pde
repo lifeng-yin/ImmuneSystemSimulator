@@ -13,33 +13,35 @@
   omits details such as: immune cell and pathogen duplication, collision detection, and pathogens infecting cells (rather than destroying).
 */
 
+import g4p_controls.*;
+
 // CONFIGURATION
 
 // The frame at which the pathogens stop spawning and end their invasion.
-int INVASION_END_FRAME = 1500;
+int INVASION_END_FRAME = 2500;
 
 // Starting health of a body cell
 float BODY_CELL_STARTING_HEALTH = 5;
 // The probability, per frame, that a cell duplicates to regenerate its neighbours. Value from 0 - 1.
-float BODY_CELL_REGENERATION_RATE = 0.01;
+float BODY_CELL_REGENERATION_RATE = 0.005;
  
 // Starting health of a macrophage
-float MACROPHAGE_STARTING_HEALTH = 10000;
+float MACROPHAGE_STARTING_HEALTH = 100;
 // Every x number of frames, a macrophage spawns.
-float MACROPHAGE_CONSTANT_SPAWN_RATE = 500;
+float MACROPHAGE_CONSTANT_SPAWN_RATE = 600;
 // Every frame, there is an x% chance a macrophage spawns. Value from 0 - 1.
 float MACROPHAGE_RANDOM_SPAWN_RATE = 0.001;
 // Macrophage speed, in pixels.
-float MACROPHAGE_SPEED = 5;
+float MACROPHAGE_SPEED = 1.5;
 
 // Every x number of frames, a neutrophil spawns.
-float NEUTROPHIL_CONSTANT_SPAWN_RATE = 500;
+float NEUTROPHIL_CONSTANT_SPAWN_RATE = 200;
 // The probability, per frame, that a random neutrophil spawns. Value from 0 - 1.
-float NEUTROPHIL_RANDOM_SPAWN_RATE = 0.005;
-// Macrophage speed, in pixels.
+float NEUTROPHIL_RANDOM_SPAWN_RATE = 0.01;
+// Neutrophil speed, in pixels.
 float NEUTROPHIL_SPEED = 3;
-// The amount of damage neutrophils do to body cells at the center of the blast. (Body cells take less damage away from the blast). 
-float NEUTROPHIL_BODY_CELL_DAMAGE = 20;
+// The amount of damage neutrophils do to other cells (Body cells and Macrophages) at the center of the blast. They take less damage away from the blast. 
+float NEUTROPHIL_CELL_DAMAGE = 10;
 // Time left of neutrophils before they explode automatically, in frames.
 int NEUTROPHIL_LIFESPAN = 300;
 // Blast radius of neutrophils.
@@ -48,19 +50,21 @@ float NEUTROPHIL_BLAST_RADIUS = 100;
 // How the pathogen invasion is spread out. 
 String PATHOGEN_SPAWN_TYPE = "continuous"; // "continuous", "waves", "ripples"
 // The probability, per frame, that a pathogen spawns. Value from 0 - 1.
-float PATHOGEN_SPAWN_RATE = 1;
+float PATHOGEN_SPAWN_RATE = 0.33;
 // Pathogen speed, in pixels.
-float PATHOGEN_SPEED = 2;
+float PATHOGEN_SPEED = 1;
 // Random number from 0 to this number to be added to pathogen speed
 float PATHOGEN_RANDOM_SPEED_BOOST = 0.5;
 // Pathogen damage to body cells and macrophages.
-float PATHOGEN_DAMAGE = 2;
+float PATHOGEN_DAMAGE = 1;
 // Pathogen length in pixels.
 float PATHOGEN_LENGTH = 20;
 // Pathogen width in pixels.
 float PATHOGEN_WIDTH = 8;
 
 Battlefield battlefield;
+
+boolean isPaused = false;
 
 void setup() {
     // Set the resolution of the screen higher. This is to make rounded corners not look pixelated (although it comes with a cost of reduced performance).
@@ -76,7 +80,9 @@ void setup() {
     // This provides consistency across the program (with circles and ellipses).
     rectMode(CENTER);
 
-    battlefield = new Battlefield(); 
+
+    battlefield = new Battlefield();
+    createGUI();
 }
 
 void draw() {

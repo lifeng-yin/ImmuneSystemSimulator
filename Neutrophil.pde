@@ -172,13 +172,13 @@ class Neutrophil {
       // Also loop over each body cell
       for (BodyCell bodyCell: battlefield.bodyCells) {
         if (bodyCell.isAlive) {
-          // If distance between the neutrophil and bodyCell is less than 50, reduce the bodyCell's health by  the pathogen.
+          // If distance between the neutrophil and bodyCell is less than 50, reduce the bodyCell's health by the pathogen.
           float distance = dist(this.position.x, this.position.y, bodyCell.position.x, bodyCell.position.y);
           if (distance <= this.blastRadius) {
-            // Reduces the health of the bodyCell by 5 + (blastRadius - distance) / 5
-            // For example (with blastRadius 100): a cell on the edge of the blast radius would take 5 dmg
-            //                                    a cell at the very center of the blast would take 20 dmg
-            bodyCell.reduceHealth(3 + (blastRadius - distance) / 10);
+            // Reduces the health by the neutrophil cell damage, multiplied by how close the body cell is to the center of the blast, as a percent
+            // For example, according to the default settings, a body cell at the center of the blast will take a full 20 damage
+            // A body cell 25 pixels away (halfway between the center and edge) will take half the damage (10 damage)
+            bodyCell.reduceHealth(NEUTROPHIL_CELL_DAMAGE * (1 - distance / blastRadius));
           }
         }
       }
@@ -188,8 +188,8 @@ class Neutrophil {
         if (macrophage.isAlive) {
           float distance = dist(this.position.x, this.position.y, macrophage.position.x, macrophage.position.y);
           if (distance <= this.blastRadius) {
-            // As macrophages have more health, reduce it more: 10 + (blastRadius - distance) / 2
-            macrophage.reduceHealth(10 + (blastRadius - distance) / 2);
+            // Reduce the health in the same way.
+            macrophage.reduceHealth(NEUTROPHIL_CELL_DAMAGE * (1 - distance / blastRadius));
           }
         }
       }
@@ -198,8 +198,12 @@ class Neutrophil {
       for (Neutrophil neutrophil: battlefield.neutrophils) {
         if (neutrophil.isAlive && neutrophil != this) {
           float distance = dist(this.position.x, this.position.y, neutrophil.position.x, neutrophil.position.y);
-          if (distance <= this.blastRadius) {
-            neutrophil.isSelfDestructing = true;
+          // Check if neutrophil is in blast radius and also not currently self destructing
+          if (distance <= this.blastRadius && neutrophil.isSelfDestructing == false) {
+            neutrophil.isAlive = false;
+            // Alternatively, cause them to self-destruct. This can cause a chain reaction, which is likely not what happens in real life, but seems pretty cool to try out.
+            // neutrophil.isSelfDestructing = true;
+            
           }
         }
       }
